@@ -1,0 +1,244 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum OrgRole {
+  admin
+  member
+}
+
+enum TeamRole {
+  lead
+  member
+}
+
+enum ProjectStatus {
+  active
+  completed
+}
+
+enum PhaseStatus {
+  pending
+  active
+  completed
+  returned
+}
+
+enum NotificationKind {
+  waiting
+  sent_back
+  closed
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  fullName     String
+  passwordHash String
+  orgRole      OrgRole  @default(member)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions           Session[]
+  teamMemberships    TeamMembership[]
+  subTeamMemberships SubTeamMembership[]
+  invitesSent        Invite[]            @relation("InvitesSent")
+  projectsCreated    Project[]           @relation("ProjectsCreated")
+  documentsUploaded  Document[]
+  notifications      Notification[]
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  subTeams    SubTeam[]
+  phases      Phase[]
+  memberships TeamMembership[]
+  invites     Invite[]
+  projects    Project[]
+}
+
+model SubTeam {
+  id        String   @id @default(cuid())
+  teamId    String
+  name      String
+  slug      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  team         Team                 @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  memberships  SubTeamMembership[]
+  phases       Phase[]
+  invites      Invite[]
+  projectPhases ProjectPhase[]
+
+  @@unique([teamId, slug])
+}
+
+model TeamMembership {
+  id        String   @id @default(cuid())
+  userId    String
+  teamId    String
+  role      TeamRole @default(member)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, teamId])
+}
+
+model SubTeamMembership {
+  id        String   @id @default(cuid())
+  userId    String
+  subTeamId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subTeam SubTeam @relation(fields: [subTeamId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, subTeamId])
+}
+
+model Phase {
+  id        String   @id @default(cuid())
+  teamId    String
+  subTeamId String
+  name      String
+  slug      String
+  step      Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  team    Team    @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  subTeam SubTeam @relation(fields: [subTeamId], references: [id], onDelete: Restrict)
+
+  @@unique([teamId, slug])
+  @@index([teamId, step])
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  teamId      String
+  createdById String
+  publicId    String        @unique
+  name        String
+  description String        @default("")
+  status      ProjectStatus @default(active)
+  currentStep Int           @default(1)
+  sequence    Int
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  team          Team           @relation(fields: [teamId], references: [id], onDelete: Restrict)
+  createdBy     User           @relation("ProjectsCreated", fields: [createdById], references: [id], onDelete: Restrict)
+  phases        ProjectPhase[]
+  notifications Notification[]
+
+  @@unique([teamId, sequence])
+}
+
+model ProjectPhase {
+  id           String      @id @default(cuid())
+  projectId    String
+  phaseId      String
+  subTeamId    String
+  publicId     String      @unique
+  name         String
+  slug         String
+  step         Int
+  attempt      Int         @default(1)
+  status       PhaseStatus @default(pending)
+  startedAt    DateTime?
+  completedAt  DateTime?
+  returnedAt   DateTime?
+  returnReason String      @default("")
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  subTeam   SubTeam    @relation(fields: [subTeamId], references: [id], onDelete: Restrict)
+  documents Document[]
+
+  @@unique([projectId, slug, attempt])
+  @@index([projectId, step, status])
+}
+
+model Document {
+  id             String   @id @default(cuid())
+  projectPhaseId String
+  uploadedById   String
+  fileKey        String
+  fileName       String
+  mimeType       String
+  sizeBytes      Int
+  createdAt      DateTime @default(now())
+
+  projectPhase ProjectPhase @relation(fields: [projectPhaseId], references: [id], onDelete: Cascade)
+  uploadedBy   User         @relation(fields: [uploadedById], references: [id], onDelete: Restrict)
+}
+
+model Invite {
+  id          String    @id @default(cuid())
+  email       String
+  teamId      String
+  subTeamId   String?
+  teamRole    TeamRole  @default(member)
+  tokenHash   String    @unique
+  invitedById String
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  subTeam   SubTeam? @relation(fields: [subTeamId], references: [id], onDelete: SetNull)
+  invitedBy User     @relation("InvitesSent", fields: [invitedById], references: [id], onDelete: Restrict)
+
+  @@index([email, teamId])
+}
+
+model Session {
+  id               String    @id @default(cuid())
+  userId           String
+  refreshTokenHash String
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  userAgent        String?
+  ipAddress        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ProjectCounter {
+  teamId String @id
+  value  Int    @default(0)
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  projectId String?
+  kind      NotificationKind
+  title     String
+  body      String           @default("")
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+}

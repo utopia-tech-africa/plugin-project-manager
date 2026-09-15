@@ -1,0 +1,1352 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/auth/sign-in": {
+      "post": {
+        "description": "Authenticates a Plugin user and returns a token pair plus their team memberships.",
+        "operationId": "postAuthSignIn",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sign-in successful."
+          },
+          "400": {
+            "description": "Validation failed."
+          },
+          "401": {
+            "description": "Email or password is incorrect."
+          }
+        },
+        "summary": "Sign in with email and password",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "description": "Issues a new access token from a valid refresh token.",
+        "operationId": "postAuthRefresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token refresh successful."
+          },
+          "401": {
+            "description": "Refresh token is invalid."
+          }
+        },
+        "summary": "Refresh access token",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/sign-out": {
+      "post": {
+        "description": "Revokes the refresh token session.",
+        "operationId": "postAuthSignOut",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignOutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "summary": "Sign out",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/accept-invite": {
+      "post": {
+        "description": "Creates or updates the invited user, joins them to the team, and signs them in.",
+        "operationId": "postAuthAcceptInvite",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptInviteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Invite accepted."
+          },
+          "401": {
+            "description": "Invite is invalid or expired."
+          }
+        },
+        "summary": "Accept a team invite",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "description": "Returns the current user, org role, and team memberships.",
+        "operationId": "getAuthMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Current user."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the signed-in user",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "description": "Returns a simple status payload so the web app and operators can confirm the API is running.",
+        "operationId": "getHealth",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "API is healthy."
+          }
+        },
+        "summary": "Check API health",
+        "tags": [
+          "Health"
+        ]
+      }
+    },
+    "/teams": {
+      "get": {
+        "description": "Admins see every team. Everyone else sees only the teams they belong to.",
+        "operationId": "getTeams",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Teams."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List teams",
+        "tags": [
+          "Teams"
+        ]
+      },
+      "post": {
+        "description": "Admins create parent teams for the organisation.",
+        "operationId": "postTeams",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTeamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Team created."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a team",
+        "tags": [
+          "Teams"
+        ]
+      }
+    },
+    "/teams/{id}": {
+      "get": {
+        "description": "Returns a team with its sub-teams, phases, and members.",
+        "operationId": "getTeamsById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Team id",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Team detail."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a team",
+        "tags": [
+          "Teams"
+        ]
+      },
+      "patch": {
+        "description": "Admins and the team's lead can rename the team.",
+        "operationId": "patchTeams",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Team id",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTeamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Team updated."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a team",
+        "tags": [
+          "Teams"
+        ]
+      }
+    },
+    "/teams/{id}/sub-teams": {
+      "post": {
+        "description": "Admins and team leads can add a sub-team under a parent team.",
+        "operationId": "postTeamsSubTeams",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Team id",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSubTeamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sub-team created."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a sub-team",
+        "tags": [
+          "Teams"
+        ]
+      }
+    },
+    "/teams/{id}/phases": {
+      "put": {
+        "description": "Sets the ordered pipeline for new projects. Phases that share a step run in parallel. Existing projects keep the pipeline they started with.",
+        "operationId": "putTeamsPhases",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Team id",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReplacePhasesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Phases saved."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a team's phases",
+        "tags": [
+          "Teams"
+        ]
+      }
+    },
+    "/teams/{id}/invites": {
+      "get": {
+        "description": "Admins and team leads can see outstanding and accepted invites.",
+        "operationId": "getTeamsInvites",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Team id",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Invites."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List invites for a team",
+        "tags": [
+          "Teams"
+        ]
+      }
+    },
+    "/invites": {
+      "post": {
+        "description": "Admins can invite anyone to any team and sub-team, including as a lead. Team leads can invite members to their own team and assign a sub-team. Pluginin emails the invite when Resend is configured, and always returns a copyable invite URL.",
+        "operationId": "postInvites",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInviteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Invite created."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Invite a user to a team",
+        "tags": [
+          "Teams",
+          "Invites"
+        ]
+      }
+    },
+    "/notifications": {
+      "get": {
+        "description": "Returns the signed-in person's recent notices and how many are still unread. Waiting work, send-backs, and closed jobs appear here.",
+        "operationId": "getNotifications",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Notices for the signed-in person.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationListDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List notices",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/read": {
+      "post": {
+        "description": "Marks every unread notice for the signed-in person as read.",
+        "operationId": "postNotificationsRead",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "All notices marked read."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark all notices read",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/{id}": {
+      "patch": {
+        "description": "Marks one notice as read for the signed-in person.",
+        "operationId": "patchNotifications",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Notice id",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchNotificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Notice updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mark a notice read",
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/stats": {
+      "get": {
+        "description": "Returns live counts, phase mix, weekly handoffs, sub-team load, pipeline steps, and recent files for the signed-in person's teams.",
+        "operationId": "getStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Dashboard stats.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardStatsDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get floor stats",
+        "tags": [
+          "Projects",
+          "Stats"
+        ]
+      }
+    },
+    "/projects": {
+      "get": {
+        "description": "Admins and team leads see active projects on their teams. Members see projects currently in their sub-team.",
+        "operationId": "getProjects",
+        "parameters": [
+          {
+            "name": "teamId",
+            "required": false,
+            "in": "query",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Projects in progress."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List work",
+        "tags": [
+          "Projects"
+        ]
+      },
+      "post": {
+        "description": "Team leads create a project. Plugin issues a project ID and opens the first phase for its sub-team.",
+        "operationId": "postProjects",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Project created."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a project",
+        "tags": [
+          "Projects"
+        ]
+      }
+    },
+    "/projects/{id}": {
+      "get": {
+        "description": "Returns the project, every phase ID, and uploaded files.",
+        "operationId": "getProjectsById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Project id",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project detail."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a project",
+        "tags": [
+          "Projects"
+        ]
+      }
+    },
+    "/project-phases/{id}/documents": {
+      "post": {
+        "description": "Adds one or more files to the active sub-team phase. Files are stored in R2 (or local disk in development).",
+        "operationId": "postProjectPhaseDocuments",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Project phase id",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Files saved."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload files to a phase",
+        "tags": [
+          "Projects"
+        ]
+      }
+    },
+    "/project-phases/{id}/complete": {
+      "post": {
+        "description": "Marks the sub-team's work complete. If every parallel phase on this step is done, the next step starts.",
+        "operationId": "postProjectPhaseComplete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Project phase id",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Phase handed off."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Hand off a phase",
+        "tags": [
+          "Projects"
+        ]
+      }
+    },
+    "/projects/{id}/send-back": {
+      "post": {
+        "description": "Reopens an earlier step with a new phase ID and keeps previous files as history.",
+        "operationId": "postProjectsSendBack",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Project id",
+            "schema": {}
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendBackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Work sent back."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Send work backwards",
+        "tags": [
+          "Projects"
+        ]
+      }
+    },
+    "/history": {
+      "get": {
+        "description": "Returns phases a sub-team has worked on, with their IDs and files.",
+        "operationId": "getHistory",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "History."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List sub-team history",
+        "tags": [
+          "Projects",
+          "History"
+        ]
+      }
+    },
+    "/documents/{id}/file": {
+      "get": {
+        "description": "Streams a previously uploaded handoff document.",
+        "operationId": "getDocumentsFile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Document id",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Download a file",
+        "tags": [
+          "Projects"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Plugin Project Manager API",
+    "description": "API for Plugin teams to create projects, move work through configurable phases, and hand off documents.",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [
+    {
+      "url": "/api/v1"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "SignInDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "admin@plugin.local"
+          },
+          "password": {
+            "type": "string",
+            "example": "plugin-admin-change-me"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "SignOutDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "AcceptInviteDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string",
+            "example": "Ama Mensah"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "fullName",
+          "password"
+        ]
+      },
+      "CreateTeamDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Production"
+          },
+          "slug": {
+            "type": "string",
+            "example": "production"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateTeamDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateSubTeamDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Design"
+          },
+          "slug": {
+            "type": "string",
+            "example": "design"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "PhaseItemDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Design"
+          },
+          "slug": {
+            "type": "string",
+            "example": "design",
+            "description": "Generated from the phase name if omitted."
+          },
+          "step": {
+            "type": "number",
+            "example": 1,
+            "description": "Phases that share a step run in parallel. The next step starts when every phase on this step is done."
+          },
+          "subTeamId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "step",
+          "subTeamId"
+        ]
+      },
+      "ReplacePhasesDto": {
+        "type": "object",
+        "properties": {
+          "phases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PhaseItemDto"
+            }
+          }
+        },
+        "required": [
+          "phases"
+        ]
+      },
+      "CreateInviteDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "ama@plugin.local"
+          },
+          "teamId": {
+            "type": "string"
+          },
+          "subTeamId": {
+            "type": "string"
+          },
+          "teamRole": {
+            "type": "string",
+            "enum": [
+              "lead",
+              "member"
+            ],
+            "default": "member"
+          }
+        },
+        "required": [
+          "email",
+          "teamId"
+        ]
+      },
+      "NotificationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "waiting",
+              "sent_back",
+              "closed"
+            ],
+            "description": "Why this notice was created."
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "projectId": {
+            "type": "string",
+            "nullable": true
+          },
+          "readAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "body",
+          "createdAt"
+        ]
+      },
+      "NotificationListDto": {
+        "type": "object",
+        "properties": {
+          "unreadCount": {
+            "type": "number"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationDto"
+            }
+          }
+        },
+        "required": [
+          "unreadCount",
+          "items"
+        ]
+      },
+      "PatchNotificationDto": {
+        "type": "object",
+        "properties": {
+          "read": {
+            "type": "boolean",
+            "description": "Set true to mark the notice as read."
+          }
+        },
+        "required": [
+          "read"
+        ]
+      },
+      "DashboardOldestJobDto": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string"
+          },
+          "publicId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phaseName": {
+            "type": "string"
+          },
+          "subTeamName": {
+            "type": "string"
+          },
+          "daysWaiting": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "projectId",
+          "publicId",
+          "name",
+          "phaseName",
+          "subTeamName",
+          "daysWaiting"
+        ]
+      },
+      "DashboardWaitingItemDto": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string"
+          },
+          "projectPublicId": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "phasePublicId": {
+            "type": "string"
+          },
+          "phaseName": {
+            "type": "string"
+          },
+          "subTeamName": {
+            "type": "string"
+          },
+          "teamName": {
+            "type": "string"
+          },
+          "daysWaiting": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "projectId",
+          "projectPublicId",
+          "projectName",
+          "phasePublicId",
+          "phaseName",
+          "subTeamName",
+          "teamName",
+          "daysWaiting"
+        ]
+      },
+      "DashboardSubTeamLoadDto": {
+        "type": "object",
+        "properties": {
+          "subTeamId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "teamName": {
+            "type": "string"
+          },
+          "activeCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "subTeamId",
+          "name",
+          "teamName",
+          "activeCount"
+        ]
+      },
+      "DashboardPipelineStepDto": {
+        "type": "object",
+        "properties": {
+          "step": {
+            "type": "number"
+          },
+          "label": {
+            "type": "string"
+          },
+          "projectCount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "step",
+          "label",
+          "projectCount"
+        ]
+      },
+      "DashboardHandoffDto": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string"
+          },
+          "projectPublicId": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "phasePublicId": {
+            "type": "string"
+          },
+          "phaseName": {
+            "type": "string"
+          },
+          "subTeamName": {
+            "type": "string"
+          },
+          "completedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "projectId",
+          "projectPublicId",
+          "projectName",
+          "phasePublicId",
+          "phaseName",
+          "subTeamName",
+          "completedAt"
+        ]
+      },
+      "DashboardPhaseMixDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "status",
+          "count"
+        ]
+      },
+      "DashboardDayCountDto": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string",
+            "example": "2026-09-10"
+          },
+          "label": {
+            "type": "string",
+            "example": "Wed"
+          },
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "day",
+          "label",
+          "count"
+        ]
+      },
+      "DashboardStatsDto": {
+        "type": "object",
+        "properties": {
+          "activeProjects": {
+            "type": "number"
+          },
+          "completedProjects": {
+            "type": "number"
+          },
+          "completedThisWeek": {
+            "type": "number"
+          },
+          "waitingOnYou": {
+            "type": "number"
+          },
+          "returnedPhases": {
+            "type": "number"
+          },
+          "filesUploaded": {
+            "type": "number"
+          },
+          "oldestJob": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DashboardOldestJobDto"
+              }
+            ]
+          },
+          "waiting": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardWaitingItemDto"
+            }
+          },
+          "bySubTeam": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardSubTeamLoadDto"
+            }
+          },
+          "pipeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardPipelineStepDto"
+            }
+          },
+          "recentHandoffs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardHandoffDto"
+            }
+          },
+          "phaseMix": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardPhaseMixDto"
+            }
+          },
+          "handoffsByDay": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardDayCountDto"
+            }
+          }
+        },
+        "required": [
+          "activeProjects",
+          "completedProjects",
+          "completedThisWeek",
+          "waitingOnYou",
+          "returnedPhases",
+          "filesUploaded",
+          "oldestJob",
+          "waiting",
+          "bySubTeam",
+          "pipeline",
+          "recentHandoffs",
+          "phaseMix",
+          "handoffsByDay"
+        ]
+      },
+      "CreateProjectDto": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "Nestle Q4 activation"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "teamId",
+          "name"
+        ]
+      },
+      "SendBackDto": {
+        "type": "object",
+        "properties": {
+          "targetPhaseId": {
+            "type": "string",
+            "description": "Project phase id to reopen."
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "targetPhaseId"
+        ]
+      }
+    }
+  }
+}
