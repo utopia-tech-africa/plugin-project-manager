@@ -167,19 +167,45 @@ export class ProjectsRepository {
     });
   }
 
-  public async listHistory(params: { subTeamIds: string[]; isAdmin: boolean }) {
-    return this.prisma.projectPhase.findMany({
-      where: params.isAdmin
-        ? {}
-        : {
-            subTeamId: {
-              in:
-                params.subTeamIds.length > 0 ? params.subTeamIds : ["__none__"],
-            },
-            status: { in: ["completed", "returned", "active"] },
-          },
+  public async listHistory(params: {
+    subTeamIds: string[];
+    teamIds: string[];
+    scope: "admin" | "lead" | "member";
+  }) {
+    const historyStatuses = ["completed", "returned", "active"] as const;
+    const rows = await this.prisma.projectPhase.findMany({
+      where:
+        params.scope === "admin"
+          ? { status: { in: [...historyStatuses] } }
+          : params.scope === "lead"
+            ? {
+                status: { in: [...historyStatuses] },
+                project: {
+                  teamId: {
+                    in: params.teamIds.length > 0 ? params.teamIds : ["__none__"],
+                  },
+                },
+              }
+            : {
+                subTeamId: {
+                  in:
+                    params.subTeamIds.length > 0
+                      ? params.subTeamIds
+                      : ["__none__"],
+                },
+                status: { in: [...historyStatuses] },
+              },
       orderBy: { updatedAt: "desc" },
-      include: {
+      take: 300,
+      select: {
+        id: true,
+        publicId: true,
+        name: true,
+        slug: true,
+        step: true,
+        attempt: true,
+        status: true,
+        returnReason: true,
         project: {
           select: {
             id: true,
@@ -189,13 +215,15 @@ export class ProjectsRepository {
             team: { select: { id: true, name: true } },
           },
         },
-        subTeam: { select: { id: true, name: true } },
-        documents: {
-          orderBy: { createdAt: "desc" },
-          include: { uploadedBy: { select: { id: true, fullName: true } } },
-        },
+        subTeam: { select: { id: true, name: true, slug: true } },
+        _count: { select: { documents: true } },
       },
     });
+
+    return rows.map(({ _count, ...item }) => ({
+      ...item,
+      documentCount: _count.documents,
+    }));
   }
 
   public async addDocuments(params: {

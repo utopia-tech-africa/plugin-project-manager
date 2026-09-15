@@ -132,11 +132,12 @@ export class ProjectsService {
 
   public async listHistory(currentUser: AuthenticatedUser) {
     const subTeamIds = currentUser.teamRoles.flatMap((item) => item.subTeamIds);
+    const teamIds = currentUser.teamRoles.map((item) => item.teamId);
+    const isLead = currentUser.teamRoles.some((item) => item.role === "lead");
     return this.projectsRepository.listHistory({
       subTeamIds,
-      isAdmin:
-        isAdmin(currentUser) ||
-        currentUser.teamRoles.some((item) => item.role === "lead"),
+      teamIds,
+      scope: isAdmin(currentUser) ? "admin" : isLead ? "lead" : "member",
     });
   }
 

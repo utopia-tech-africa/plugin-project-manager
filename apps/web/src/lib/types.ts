@@ -89,13 +89,23 @@ export type Project = {
   phases: ProjectPhase[];
 };
 
-export type HistoryItem = ProjectPhase & {
+export type HistoryItem = {
+  id: string;
+  publicId: string;
+  name: string;
+  slug: string;
+  step: number;
+  attempt: number;
+  status: PhaseStatus;
+  returnReason: string;
+  documentCount: number;
+  subTeam: { id: string; name: string; slug: string };
   project: {
     id: string;
     publicId: string;
     name: string;
     status: ProjectStatus;
-    team: { id: string; name: string };
+    team?: { id: string; name: string };
   };
 };
 
