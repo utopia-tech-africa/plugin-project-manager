@@ -82,7 +82,7 @@ class EnvironmentVariablesDto {
 
   @IsString()
   @MinLength(3)
-  public MAIL_FROM = "Pluginin <onboarding@resend.dev>";
+  public MAIL_FROM = "Plugin <onboarding@resend.dev>";
 }
 
 export type EnvironmentVariables = {
@@ -164,7 +164,7 @@ export const validateEnvironment = (
     RESEND_API_KEY: asString(config["RESEND_API_KEY"], ""),
     MAIL_FROM: asString(
       config["MAIL_FROM"],
-      "Pluginin <onboarding@resend.dev>",
+      "Plugin <onboarding@resend.dev>",
     ),
   };
 

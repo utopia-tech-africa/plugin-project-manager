@@ -1,18 +1,156 @@
 "use client";
 
+import { useMemo, useState } from "react";
+
 import { DocketId } from "@/components/docket-id";
 import { PageHeader } from "@/components/page-header";
 import { Ticket } from "@/components/ticket";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useGetHistory } from "@/lib/api/generated/client";
-import type { HistoryItem } from "@/lib/types";
+import type { HistoryItem, PhaseStatus } from "@/lib/types";
+
+const ALL = "all";
+
+const STATUS_OPTIONS: Array<{ value: typeof ALL | PhaseStatus; label: string }> =
+  [
+    { value: ALL, label: "All statuses" },
+    { value: "active", label: "Active" },
+    { value: "completed", label: "Completed" },
+    { value: "returned", label: "Returned" },
+  ];
 
 export default function HistoryPage() {
   const query = useGetHistory();
   const items = (query.data as HistoryItem[] | undefined) ?? [];
+  const [filterQuery, setFilterQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<typeof ALL | PhaseStatus>(
+    ALL,
+  );
+  const [filterSubTeamId, setFilterSubTeamId] = useState(ALL);
+
+  const subTeamOptions = useMemo(() => {
+    const byId = new Map<string, string>();
+    for (const item of items) {
+      byId.set(item.subTeam.id, item.subTeam.name);
+    }
+    return [...byId.entries()]
+      .map(([id, name]) => ({ id, name }))
+      .sort((left, right) => left.name.localeCompare(right.name));
+  }, [items]);
+
+  const filteredItems = useMemo(() => {
+    const needle = filterQuery.trim().toLowerCase();
+    return items.filter((item) => {
+      if (filterStatus !== ALL && item.status !== filterStatus) {
+        return false;
+      }
+      if (filterSubTeamId !== ALL && item.subTeam.id !== filterSubTeamId) {
+        return false;
+      }
+      if (needle.length === 0) {
+        return true;
+      }
+      const haystack = [
+        item.publicId,
+        item.name,
+        item.project.name,
+        item.project.publicId,
+        item.subTeam.name,
+        item.status,
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(needle);
+    });
+  }, [filterQuery, filterStatus, filterSubTeamId, items]);
 
   return (
     <div className="flex flex-col gap-8">
       <PageHeader eyebrow="Archive" title="History" />
+
+      {items.length > 0 ? (
+        <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_10rem_12rem]">
+          <Field>
+            <FieldLabel htmlFor="history-search">Search</FieldLabel>
+            <Input
+              id="history-search"
+              value={filterQuery}
+              placeholder="Project, docket, or sub-team"
+              onChange={(event) => setFilterQuery(event.target.value)}
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="history-status">Status</FieldLabel>
+            <Select
+              value={filterStatus}
+              items={Object.fromEntries(
+                STATUS_OPTIONS.map((option) => [option.value, option.label]),
+              )}
+              onValueChange={(value) => {
+                if (value === null) {
+                  return;
+                }
+                setFilterStatus(value as typeof ALL | PhaseStatus);
+              }}
+            >
+              <SelectTrigger id="history-status" className="w-full">
+                <SelectValue placeholder="All statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {STATUS_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="history-subteam">Sub-team</FieldLabel>
+            <Select
+              value={filterSubTeamId}
+              items={{
+                [ALL]: "All sub-teams",
+                ...Object.fromEntries(
+                  subTeamOptions.map((subTeam) => [subTeam.id, subTeam.name]),
+                ),
+              }}
+              onValueChange={(value) => {
+                if (value === null) {
+                  return;
+                }
+                setFilterSubTeamId(value);
+              }}
+            >
+              <SelectTrigger id="history-subteam" className="w-full">
+                <SelectValue placeholder="All sub-teams" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value={ALL}>All sub-teams</SelectItem>
+                  {subTeamOptions.map((subTeam) => (
+                    <SelectItem key={subTeam.id} value={subTeam.id}>
+                      {subTeam.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </Field>
+        </div>
+      ) : null}
+
       {items.length === 0 ? (
         <Ticket>
           <p className="font-heading text-xl">No work recorded yet</p>
@@ -20,9 +158,16 @@ export default function HistoryPage() {
             Phases your sub-team has touched will show up here.
           </p>
         </Ticket>
+      ) : filteredItems.length === 0 ? (
+        <Ticket>
+          <p className="font-heading text-xl">No matching history</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Try a different search, status, or sub-team.
+          </p>
+        </Ticket>
       ) : (
         <ul className="grid gap-4 md:grid-cols-2">
-          {items.map((item) => (
+          {filteredItems.map((item) => (
             <li key={item.id}>
               <Ticket
                 href={`/work/${item.project.id}`}

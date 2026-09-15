@@ -25,13 +25,13 @@ export const renderInviteEmail = (
 
   const html = renderEmailLayout({
     appUrl: params.appUrl,
-    preheader: `${params.inviterName} invited you to ${params.teamName} on Pluginin.`,
+    preheader: `${params.inviterName} invited you to ${params.teamName} on Plugin.`,
     eyebrow: "Team invite",
     title: `Join ${params.teamName}`,
     bodyHtml: `
       <p style="margin:0 0 12px;">
         <strong>${emailEscape(params.inviterName)}</strong> invited you to
-        <strong>${emailEscape(params.teamName)}</strong> on Pluginin.${assignment}
+        <strong>${emailEscape(params.teamName)}</strong> on Plugin.${assignment}
       </p>
       <p style="margin:0 0 12px;">
         Open the link below to set your name and password. The invite stays open until
@@ -46,7 +46,7 @@ export const renderInviteEmail = (
   const text = [
     `Join ${params.teamName}`,
     "",
-    `${params.inviterName} invited you to ${params.teamName} on Pluginin.`,
+    `${params.inviterName} invited you to ${params.teamName} on Plugin.`,
     params.subTeamName !== undefined && params.subTeamName.length > 0
       ? `You'll join ${params.subTeamName} as a ${params.roleLabel}.`
       : `You'll join as a ${params.roleLabel}.`,
@@ -56,7 +56,7 @@ export const renderInviteEmail = (
   ].join("\n");
 
   return {
-    subject: `Join ${params.teamName} on Pluginin`,
+    subject: `Join ${params.teamName} on Plugin`,
     html,
     text,
   };

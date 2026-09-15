@@ -68,7 +68,7 @@ export const renderEmailLayout = (params: EmailLayoutParams): string => {
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px;">
           <tr>
             <td style="padding:0 0 20px;">
-              <img src="${escapeHtml(logoUrl)}" alt="Pluginin" width="120" height="44" style="display:block;border:0;outline:none;height:auto;max-width:120px;" />
+              <img src="${escapeHtml(logoUrl)}" alt="Plugin" width="120" height="44" style="display:block;border:0;outline:none;height:auto;max-width:120px;" />
             </td>
           </tr>
           <tr>
@@ -88,7 +88,7 @@ export const renderEmailLayout = (params: EmailLayoutParams): string => {
           <tr>
             <td style="padding:20px 4px 0;">
               <p style="margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;line-height:1.5;color:${BRAND.muted};">
-                Pluginin Project Manager · Work moves through teams. IDs stay with the files.
+                Plugin Project Manager · Work moves through teams. IDs stay with the files.
               </p>
               ${footerNote}
             </td>

@@ -148,7 +148,7 @@ export class TeamsController {
   @ApiOperation({
     summary: "Invite a user to a team",
     description:
-      "Admins can invite anyone to any team and sub-team, including as a lead. Team leads can invite members to their own team and assign a sub-team. Pluginin emails the invite when Resend is configured, and always returns a copyable invite URL.",
+      "Admins can invite anyone to any team and sub-team, including as a lead. Team leads can invite members to their own team and assign a sub-team. Plugin emails the invite when Resend is configured, and always returns a copyable invite URL.",
   })
   @ApiCreatedResponse({ description: "Invite created." })
   public postInvites(

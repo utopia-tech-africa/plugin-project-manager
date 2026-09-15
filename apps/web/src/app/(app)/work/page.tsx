@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { DocketId } from "@/components/docket-id";
@@ -27,6 +27,8 @@ import { ApiError } from "@/lib/api/problem-details";
 import { useAuthStore } from "@/lib/auth/auth-store";
 import type { Project, TeamSummary } from "@/lib/types";
 
+const ALL_TEAMS = "all";
+
 export default function WorkPage() {
   const user = useAuthStore((state) => state.user);
   const projectsQuery = useGetProjects();
@@ -40,6 +42,8 @@ export default function WorkPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [teamId, setTeamId] = useState("");
+  const [filterQuery, setFilterQuery] = useState("");
+  const [filterTeamId, setFilterTeamId] = useState(ALL_TEAMS);
   const leadTeams = teams.filter(
     (team) =>
       user?.orgRole === "admin" ||
@@ -47,6 +51,42 @@ export default function WorkPage() {
         (item) => item.teamId === team.id && item.role === "lead",
       ),
   );
+
+  const teamOptions = useMemo(() => {
+    const byId = new Map<string, string>();
+    for (const project of projects) {
+      byId.set(project.team.id, project.team.name);
+    }
+    for (const team of teams) {
+      byId.set(team.id, team.name);
+    }
+    return [...byId.entries()]
+      .map(([id, label]) => ({ id, name: label }))
+      .sort((left, right) => left.name.localeCompare(right.name));
+  }, [projects, teams]);
+
+  const filteredProjects = useMemo(() => {
+    const needle = filterQuery.trim().toLowerCase();
+    return projects.filter((project) => {
+      if (filterTeamId !== ALL_TEAMS && project.team.id !== filterTeamId) {
+        return false;
+      }
+      if (needle.length === 0) {
+        return true;
+      }
+      const haystack = [
+        project.name,
+        project.publicId,
+        project.team.name,
+        ...project.phases
+          .filter((phase) => phase.status === "active")
+          .flatMap((phase) => [phase.publicId, phase.subTeam.name]),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(needle);
+    });
+  }, [filterQuery, filterTeamId, projects]);
 
   return (
     <div className="flex flex-col gap-10">
@@ -138,6 +178,52 @@ export default function WorkPage() {
       ) : null}
 
       <section className="flex flex-col gap-4">
+        {projects.length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_12rem]">
+            <Field>
+              <FieldLabel htmlFor="work-search">Search</FieldLabel>
+              <Input
+                id="work-search"
+                value={filterQuery}
+                placeholder="Name, docket, or team"
+                onChange={(event) => setFilterQuery(event.target.value)}
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="work-team">Team</FieldLabel>
+              <Select
+                value={filterTeamId}
+                items={{
+                  [ALL_TEAMS]: "All teams",
+                  ...Object.fromEntries(
+                    teamOptions.map((team) => [team.id, team.name]),
+                  ),
+                }}
+                onValueChange={(value) => {
+                  if (value === null) {
+                    return;
+                  }
+                  setFilterTeamId(value);
+                }}
+              >
+                <SelectTrigger id="work-team" className="w-full">
+                  <SelectValue placeholder="All teams" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value={ALL_TEAMS}>All teams</SelectItem>
+                    {teamOptions.map((team) => (
+                      <SelectItem key={team.id} value={team.id}>
+                        {team.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
+          </div>
+        ) : null}
+
         {projects.length === 0 ? (
           <Ticket>
             <p className="font-heading text-xl">Nothing on your plate yet</p>
@@ -145,9 +231,16 @@ export default function WorkPage() {
               Active jobs for your team will land here.
             </p>
           </Ticket>
+        ) : filteredProjects.length === 0 ? (
+          <Ticket>
+            <p className="font-heading text-xl">No matching work</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Try a different search or team filter.
+            </p>
+          </Ticket>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
-            {projects.map((project) => {
+            {filteredProjects.map((project) => {
               const active = project.phases.filter(
                 (phase) => phase.status === "active",
               );

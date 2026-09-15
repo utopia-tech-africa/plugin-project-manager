@@ -12,7 +12,7 @@ export const Logo = ({
   return (
     <Image
       src="/logo.png"
-      alt="Pluginin"
+      alt="Plugin"
       width={138}
       height={50}
       className={cn("h-8 w-auto", className)}

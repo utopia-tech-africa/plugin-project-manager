@@ -182,7 +182,7 @@ export class ProjectsController {
   @ApiOperation({
     summary: "Send work backwards",
     description:
-      "Reopens an earlier step with a new phase ID and keeps previous files as history.",
+      "Reopens the previous step with a new phase ID and keeps previous files as history.",
   })
   @ApiOkResponse({ description: "Work sent back." })
   public postProjectsSendBack(

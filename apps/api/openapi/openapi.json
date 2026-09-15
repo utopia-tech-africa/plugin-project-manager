@@ -379,7 +379,7 @@
     },
     "/invites": {
       "post": {
-        "description": "Admins can invite anyone to any team and sub-team, including as a lead. Team leads can invite members to their own team and assign a sub-team. Pluginin emails the invite when Resend is configured, and always returns a copyable invite URL.",
+        "description": "Admins can invite anyone to any team and sub-team, including as a lead. Team leads can invite members to their own team and assign a sub-team. Plugin emails the invite when Resend is configured, and always returns a copyable invite URL.",
         "operationId": "postInvites",
         "parameters": [],
         "requestBody": {
@@ -698,7 +698,7 @@
     },
     "/projects/{id}/send-back": {
       "post": {
-        "description": "Reopens an earlier step with a new phase ID and keeps previous files as history.",
+        "description": "Reopens the previous step with a new phase ID and keeps previous files as history.",
         "operationId": "postProjectsSendBack",
         "parameters": [
           {

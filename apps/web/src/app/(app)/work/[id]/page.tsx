@@ -75,6 +75,11 @@ export default function ProjectPage() {
     (left, right) =>
       left.step - right.step || left.name.localeCompare(right.name),
   );
+  const previousStep = project.currentStep - 1;
+  const sendBackTargets =
+    previousStep >= 1
+      ? visible.filter((phase) => phase.step === previousStep)
+      : [];
 
   return (
     <div className="flex flex-col gap-8">
@@ -158,39 +163,21 @@ export default function ProjectPage() {
                   <div className="flex flex-wrap gap-2">
                     <Button
                       type="button"
-                      variant="outline"
                       disabled={
+                        completePhase.isPending ||
                         uploadDocuments.isPending ||
-                        files === null ||
-                        files.length === 0
+                        (phase.documents.length === 0 &&
+                          (files === null || files.length === 0))
                       }
                       onClick={async () => {
-                        if (files === null) {
-                          return;
-                        }
                         try {
-                          await uploadDocuments.mutateAsync({
-                            id: phase.id,
-                            data: { files: Array.from(files) },
-                          });
-                          toast.success("Files saved.");
-                          await query.refetch();
-                        } catch (error) {
-                          toast.error(
-                            error instanceof ApiError
-                              ? error.message
-                              : "Could not upload files.",
-                          );
-                        }
-                      }}
-                    >
-                      Save files
-                    </Button>
-                    <Button
-                      type="button"
-                      disabled={completePhase.isPending}
-                      onClick={async () => {
-                        try {
+                          if (files !== null && files.length > 0) {
+                            await uploadDocuments.mutateAsync({
+                              id: phase.id,
+                              data: { files: Array.from(files) },
+                            });
+                            setFiles(null);
+                          }
                           await completePhase.mutateAsync({ id: phase.id });
                           toast.success("Handed off.");
                           await query.refetch();
@@ -213,7 +200,7 @@ export default function ProjectPage() {
         ))}
       </ol>
 
-      {project.status === "active" ? (
+      {project.status === "active" && sendBackTargets.length > 0 ? (
         <Ticket tone="returned">
           <h2 className="font-heading text-xl tracking-tight">Send back</h2>
           <form
@@ -231,6 +218,7 @@ export default function ProjectPage() {
                 });
                 toast.success("Sent back.");
                 setReturnReason("");
+                setTargetPhaseId("");
                 await query.refetch();
               } catch (error) {
                 toast.error(
@@ -247,7 +235,7 @@ export default function ProjectPage() {
                 <Select
                   value={targetPhaseId.length > 0 ? targetPhaseId : null}
                   items={Object.fromEntries(
-                    visible.map((phase) => [
+                    sendBackTargets.map((phase) => [
                       phase.id,
                       `${phase.publicId} · ${phase.name}`,
                     ]),
@@ -260,11 +248,11 @@ export default function ProjectPage() {
                   }}
                 >
                   <SelectTrigger id="target" className="w-full">
-                    <SelectValue placeholder="Choose a phase" />
+                    <SelectValue placeholder="Choose previous phase" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      {visible.map((phase) => (
+                      {sendBackTargets.map((phase) => (
                         <SelectItem key={phase.id} value={phase.id}>
                           {phase.publicId} · {phase.name}
                         </SelectItem>

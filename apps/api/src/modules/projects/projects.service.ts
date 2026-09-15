@@ -240,6 +240,19 @@ export class ProjectsService {
         );
       }
     }
+
+    const target =
+      await this.projectsRepository.findProjectPhaseById(body.targetPhaseId);
+    if (target === null || target.projectId !== projectId) {
+      throw new NotFoundException("Phase was not found.");
+    }
+    const previousStep = project.currentStep - 1;
+    if (previousStep < 1 || target.step !== previousStep) {
+      throw new BadRequestException(
+        "You can only send work back to the previous phase.",
+      );
+    }
+
     const updated = await this.projectsRepository.sendBack({
       targetPhaseId: body.targetPhaseId,
       reason: body.reason?.trim() ?? "",

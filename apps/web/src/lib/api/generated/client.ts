@@ -1051,7 +1051,7 @@ export function useGetTeamsInvites<TData = Awaited<ReturnType<typeof getTeamsInv
 
 
 /**
- * Admins can invite anyone to any team and sub-team, including as a lead. Team leads can invite members to their own team and assign a sub-team. Pluginin emails the invite when Resend is configured, and always returns a copyable invite URL.
+ * Admins can invite anyone to any team and sub-team, including as a lead. Team leads can invite members to their own team and assign a sub-team. Plugin emails the invite when Resend is configured, and always returns a copyable invite URL.
  * @summary Invite a user to a team
  */
 export const postInvites = (
@@ -1825,7 +1825,7 @@ export const usePostProjectPhaseComplete = <TError = unknown,
     }
     
 /**
- * Reopens an earlier step with a new phase ID and keeps previous files as history.
+ * Reopens the previous step with a new phase ID and keeps previous files as history.
  * @summary Send work backwards
  */
 export const postProjectsSendBack = (
