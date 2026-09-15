@@ -95,6 +95,7 @@ export type HistoryItem = ProjectPhase & {
     publicId: string;
     name: string;
     status: ProjectStatus;
+    team: { id: string; name: string };
   };
 };
 

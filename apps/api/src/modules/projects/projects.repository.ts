@@ -181,7 +181,13 @@ export class ProjectsRepository {
       orderBy: { updatedAt: "desc" },
       include: {
         project: {
-          select: { id: true, publicId: true, name: true, status: true },
+          select: {
+            id: true,
+            publicId: true,
+            name: true,
+            status: true,
+            team: { select: { id: true, name: true } },
+          },
         },
         subTeam: { select: { id: true, name: true } },
         documents: {

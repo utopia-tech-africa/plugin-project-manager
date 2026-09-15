@@ -22,9 +22,31 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ??
+      (process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : process.env.VERCEL_URL
+          ? `https://${process.env.VERCEL_URL}`
+          : "http://localhost:3000"),
+  ),
   title: "Plugin Project Manager",
   description:
     "Move work through Plugin teams with readable IDs and file handoffs.",
+  applicationName: "Plugin Project Manager",
+  openGraph: {
+    title: "Plugin Project Manager",
+    description:
+      "Move work through Plugin teams with readable IDs and file handoffs.",
+    siteName: "Plugin Project Manager",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Plugin Project Manager",
+    description:
+      "Move work through Plugin teams with readable IDs and file handoffs.",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

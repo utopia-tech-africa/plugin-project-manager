@@ -7,6 +7,14 @@ import { DocketId } from "@/components/docket-id";
 import { PageHeader } from "@/components/page-header";
 import { Ticket } from "@/components/ticket";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
@@ -39,6 +47,7 @@ export default function WorkPage() {
   const canCreate =
     user?.orgRole === "admin" ||
     user?.teamRoles.some((item) => item.role === "lead") === true;
+  const [createOpen, setCreateOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [teamId, setTeamId] = useState("");
@@ -88,15 +97,41 @@ export default function WorkPage() {
     });
   }, [filterQuery, filterTeamId, projects]);
 
+  const resetCreateForm = () => {
+    setName("");
+    setDescription("");
+    setTeamId("");
+  };
+
   return (
     <div className="flex flex-col gap-10">
-      <PageHeader eyebrow="Now" title="Work" />
+      <PageHeader eyebrow="Now" title="Work">
+        {canCreate ? (
+          <Button type="button" onClick={() => setCreateOpen(true)}>
+            New project
+          </Button>
+        ) : null}
+      </PageHeader>
 
-      {canCreate ? (
-        <Ticket>
-          <h2 className="font-heading text-xl tracking-tight">New project</h2>
+      <Dialog
+        open={createOpen}
+        onOpenChange={(open) => {
+          setCreateOpen(open);
+          if (!open) {
+            resetCreateForm();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md" showCloseButton>
+          <DialogHeader>
+            <DialogTitle>New project</DialogTitle>
+            <DialogDescription>
+              Start a job for one of your teams. It opens on the first phase.
+            </DialogDescription>
+          </DialogHeader>
           <form
-            className="mt-4"
+            id="create-project-form"
+            className="flex flex-col gap-4"
             onSubmit={async (event) => {
               event.preventDefault();
               const selectedTeamId = teamId || leadTeams[0]?.id;
@@ -108,8 +143,8 @@ export default function WorkPage() {
                 await createProject.mutateAsync({
                   data: { teamId: selectedTeamId, name, description },
                 });
-                setName("");
-                setDescription("");
+                resetCreateForm();
+                setCreateOpen(false);
                 toast.success("Project created.");
                 await projectsQuery.refetch();
               } catch (error) {
@@ -169,13 +204,26 @@ export default function WorkPage() {
                   onChange={(event) => setDescription(event.target.value)}
                 />
               </Field>
-              <Button type="submit" disabled={createProject.isPending}>
-                Create project
-              </Button>
             </FieldGroup>
           </form>
-        </Ticket>
-      ) : null}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCreateOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form="create-project-form"
+              disabled={createProject.isPending}
+            >
+              Create project
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <section className="flex flex-col gap-4">
         {projects.length > 0 ? (
